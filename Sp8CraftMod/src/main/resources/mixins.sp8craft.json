@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "net.sp8craft.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "WorldGenSettingsMixin"
+  ],
+  "client": [
+  ],
+  "minVersion": "0.8"
+}
