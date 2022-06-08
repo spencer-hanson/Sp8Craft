@@ -7,10 +7,9 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        classpath 'org.parchmentmc:librarian:1.+'
-        // MixinGradle:
-        classpath 'org.spongepowered:mixingradle:0.7.+'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true // ForgeGradle
+        classpath 'org.parchmentmc:librarian:1.+' // Parchment
+        classpath 'org.spongepowered:mixingradle:0.7.+' // MixinGradle
     }
 }
 // Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.

@@ -37,6 +37,33 @@ import java.util.concurrent.Executor;
 
 
 public class Sp8CraftChunkGenerator extends ChunkGenerator {
+    private long seed;
+    protected final Registry<StructureSet> structureSets;
+
+    public static final Codec<Sp8CraftChunkGenerator> CODEC = RecordCodecBuilder.create((instance) ->
+            instance.group(
+                            RegistryOps.retrieveRegistry(Registry.STRUCTURE_SET_REGISTRY).forGetter((inst) -> inst.structureSets),
+                            BiomeSource.CODEC.fieldOf("biome_source").forGetter((generator) -> generator.biomeSource),
+                            Codec.LONG.fieldOf("seed").stable().forGetter((generator) -> generator.seed))
+                    .apply(instance, instance.stable(Sp8CraftChunkGenerator::new)));
+    // Codec corresponds to the Constructor
+
+    public Sp8CraftChunkGenerator(Registry<StructureSet> structureSets, BiomeSource biomeSource, long seed) {
+        super(structureSets, Optional.empty(), biomeSource);
+
+        this.seed = seed;
+        this.structureSets = structureSets;
+    }
+
+    public Sp8CraftChunkGenerator(Registry<StructureSet> pStructureSets, Optional<HolderSet<StructureSet>> pStructureOverrides, BiomeSource pBiomeSource) {
+        // TODO Generate a seed for the non-seed generated constructor
+        this(pStructureSets, pBiomeSource, 8);
+    }
+
+    public Sp8CraftChunkGenerator(Registry<StructureSet> pStructureSets, Optional<HolderSet<StructureSet>> pStructureOverrides, BiomeSource pBiomeSource, BiomeSource pRuntimeBiomeSource, long pRingPlacementSeed) {
+        this(pStructureSets, pStructureOverrides, pBiomeSource);
+    }
+
     public static class Sp8ChunkFactory implements ForgeWorldPreset.IBasicChunkGeneratorFactory {
 
         @Override
@@ -79,34 +106,54 @@ public class Sp8CraftChunkGenerator extends ChunkGenerator {
         }
     }
 
-    private long seed;
-    protected final Registry<StructureSet> structureSets;
 
-    public static final Codec<Sp8CraftChunkGenerator> CODEC = RecordCodecBuilder.create((instance) ->
-            instance.group(
-                            RegistryOps.retrieveRegistry(Registry.STRUCTURE_SET_REGISTRY).forGetter((inst) -> inst.structureSets),
-                            BiomeSource.CODEC.fieldOf("biome_source").forGetter((generator) -> generator.biomeSource),
-                            Codec.LONG.fieldOf("seed").stable().forGetter((generator) -> generator.seed))
-                    .apply(instance, instance.stable(Sp8CraftChunkGenerator::new)));
-    // Codec corresponds to the Constructor
+    @Override
+    public @NotNull CompletableFuture<ChunkAccess> fillFromNoise(
+            @NotNull Executor executor,
+            @NotNull Blender blender,
+            @NotNull StructureFeatureManager structureFeatureManager,
+            ChunkAccess chunkAccess) {
 
-    public Sp8CraftChunkGenerator(Registry<StructureSet> structureSets, BiomeSource biomeSource, long seed) {
-        super(structureSets, Optional.empty(), biomeSource);
+        List<BlockState> list = new ArrayList<>();
+        list.add(Blocks.DIAMOND_BLOCK.defaultBlockState());
+        list.add(Blocks.GOLD_BLOCK.defaultBlockState());
+        list.add(Blocks.IRON_BLOCK.defaultBlockState());
 
-        this.seed = seed;
-        this.structureSets = structureSets;
+
+        BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
+        Heightmap heightmap = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
+        Heightmap heightmap1 = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
+
+        for (int i = 0; i < Math.min(chunkAccess.getHeight(), list.size()); ++i) {
+            BlockState blockstate = list.get(i);
+            if (blockstate != null) {
+                int j = chunkAccess.getMinBuildHeight() + i;
+
+                for (int k = 0; k < 16; ++k) {
+                    for (int l = 0; l < 16; ++l) {
+                        chunkAccess.setBlockState(blockpos$mutableblockpos.set(k, j, l), blockstate, false);
+                        heightmap.update(k, j, l, blockstate);
+                        heightmap1.update(k, j, l, blockstate);
+                    }
+                }
+            }
+        }
+
+        return CompletableFuture.completedFuture(chunkAccess);
     }
 
-    public Sp8CraftChunkGenerator(Registry<StructureSet> pStructureSets, Optional<HolderSet<StructureSet>> pStructureOverrides, BiomeSource pBiomeSource) {
-        // TODO Generate a seed for the non-seed generated constructor
-        this(pStructureSets, pBiomeSource, 8);
-    }
+    @Override
+    public @NotNull NoiseColumn getBaseColumn(int pX, int pZ, LevelHeightAccessor pLevel) {
+        // Looks like something to do with generating structures?
+        List<BlockState> list = new ArrayList<>();
+        list.add(Blocks.EMERALD_BLOCK.defaultBlockState());
 
-    public Sp8CraftChunkGenerator(Registry<StructureSet> pStructureSets,
-                                  Optional<HolderSet<StructureSet>> pStructureOverrides,
-                                  BiomeSource pBiomeSource, BiomeSource pRuntimeBiomeSource,
-                                  long pRingPlacementSeed) {
-        this(pStructureSets, pStructureOverrides, pBiomeSource);
+        return new NoiseColumn(pLevel.getMinBuildHeight(), list
+                .stream()
+                .limit((long) pLevel.getHeight())
+                .map((block) -> block == null ? Blocks.AIR.defaultBlockState() : block)
+                .toArray(BlockState[]::new)
+        );
     }
 
     @Override
@@ -146,41 +193,6 @@ public class Sp8CraftChunkGenerator extends ChunkGenerator {
     }
 
     @Override
-    public @NotNull CompletableFuture<ChunkAccess> fillFromNoise(
-            @NotNull Executor executor,
-            @NotNull Blender blender,
-            @NotNull StructureFeatureManager structureFeatureManager,
-            ChunkAccess chunkAccess) {
-
-        List<BlockState> list = new ArrayList<>();
-        list.add(Blocks.DIAMOND_BLOCK.defaultBlockState());
-        list.add(Blocks.GOLD_BLOCK.defaultBlockState());
-        list.add(Blocks.IRON_BLOCK.defaultBlockState());
-
-
-        BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
-        Heightmap heightmap = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
-        Heightmap heightmap1 = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
-
-        for (int i = 0; i < Math.min(chunkAccess.getHeight(), list.size()); ++i) {
-            BlockState blockstate = list.get(i);
-            if (blockstate != null) {
-                int j = chunkAccess.getMinBuildHeight() + i;
-
-                for (int k = 0; k < 16; ++k) {
-                    for (int l = 0; l < 16; ++l) {
-                        chunkAccess.setBlockState(blockpos$mutableblockpos.set(k, j, l), blockstate, false);
-                        heightmap.update(k, j, l, blockstate);
-                        heightmap1.update(k, j, l, blockstate);
-                    }
-                }
-            }
-        }
-
-        return CompletableFuture.completedFuture(chunkAccess);
-    }
-
-    @Override
     public int getSeaLevel() {
 
         //        return -63; // From FlatLevelSource
@@ -196,19 +208,6 @@ public class Sp8CraftChunkGenerator extends ChunkGenerator {
     public int getBaseHeight(int pX, int pZ, Heightmap.@NotNull Types pType, LevelHeightAccessor pLevel) {
         return pLevel.getMinBuildHeight();
 //        return 0;
-    }
-
-    @Override
-    public @NotNull NoiseColumn getBaseColumn(int pX, int pZ, LevelHeightAccessor pLevel) {
-        List<BlockState> list = new ArrayList<>();
-        list.add(Blocks.EMERALD_BLOCK.defaultBlockState());
-
-        return new NoiseColumn(pLevel.getMinBuildHeight(), list
-                .stream()
-                .limit((long)pLevel.getHeight())
-                .map((block) -> block == null ? Blocks.AIR.defaultBlockState() : block)
-                .toArray(BlockState[]::new)
-        );
     }
 
     @Override
