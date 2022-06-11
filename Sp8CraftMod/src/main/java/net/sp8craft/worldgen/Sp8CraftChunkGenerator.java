@@ -124,20 +124,71 @@ public class Sp8CraftChunkGenerator extends ChunkGenerator {
         Heightmap heightmap = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
         Heightmap heightmap1 = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
 
-        for (int i = 0; i < Math.min(chunkAccess.getHeight(), list.size()); ++i) {
-            BlockState blockstate = list.get(i);
-            if (blockstate != null) {
-                int j = chunkAccess.getMinBuildHeight() + i;
+//        for (int y = 0;y < Math.min(chunkAccess.getHeight(), l))
+        int baseY = chunkAccess.getMinBuildHeight();
+        BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
 
-                for (int k = 0; k < 16; ++k) {
-                    for (int l = 0; l < 16; ++l) {
-                        chunkAccess.setBlockState(blockpos$mutableblockpos.set(k, j, l), blockstate, false);
-                        heightmap.update(k, j, l, blockstate);
-                        heightmap1.update(k, j, l, blockstate);
-                    }
-                }
+
+        BlockState blockState = Blocks.GRASS_BLOCK.defaultBlockState();
+        double twoPi = (Math.PI * 2);
+        double period = 32;
+        double scale = twoPi / period;
+        double roundFactor = 10000;
+        int amplitude = 32;
+
+        int chunkX = chunkAccess.getPos().x;
+        int chunkZ = chunkAccess.getPos().z;
+
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                double blockX = x + (chunkX * 16);
+                double blockZ = z + (chunkZ * 16);
+                double blockY = (amplitude * Math.round((Math.sin(Math.sqrt(blockX*blockX + blockZ*blockZ) * scale) / twoPi * roundFactor)) / roundFactor);
+                blockY += amplitude; // Offset from 0
+
+
+                int intY = (int)Math.floor(blockY);
+
+                chunkAccess.setBlockState(
+                        mutableBlockPos.set(
+                                x,
+                                intY,
+                                z
+                        ),
+                        blockState,
+                        false
+                );
+
+//                heightmap.update(
+//                        x,
+//                        intY,
+//                        z,
+//                        blockState
+//                );
+//
+//                heightmap1.update(
+//                        x,
+//                        intY,
+//                        z,
+//                        blockState
+//                );
             }
         }
+
+//        for (int i = 0; i < Math.min(chunkAccess.getHeight(), list.size()); ++i) {
+//            BlockState blockstate = list.get(i);
+//            if (blockstate != null) {
+//                int j = chunkAccess.getMinBuildHeight() + i;
+//
+//                for (int k = 0; k < 16; ++k) {
+//                    for (int l = 0; l < 16; ++l) {
+//                        chunkAccess.setBlockState(blockpos$mutableblockpos.set(k, j, l), blockstate, false);
+//                        heightmap.update(k, j, l, blockstate);
+//                        heightmap1.update(k, j, l, blockstate);
+//                    }
+//                }
+//            }
+//        }
 
         return CompletableFuture.completedFuture(chunkAccess);
     }
@@ -145,6 +196,8 @@ public class Sp8CraftChunkGenerator extends ChunkGenerator {
     @Override
     public @NotNull NoiseColumn getBaseColumn(int pX, int pZ, LevelHeightAccessor pLevel) {
         // Looks like something to do with generating structures?
+        // Seems to only be called for Nether Fossils and Ruined portals
+        //
         List<BlockState> list = new ArrayList<>();
         list.add(Blocks.EMERALD_BLOCK.defaultBlockState());
 

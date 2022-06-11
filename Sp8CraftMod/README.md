@@ -40,6 +40,8 @@ ResourceLocation https://minecraft.fandom.com/wiki/Resource_location
 https://darkhax.net/2020/07/mixins
 Injection Point reference https://github.com/SpongePowered/Mixin/wiki/Injection-Point-Reference
 
+Useful overview page https://gist.github.com/TelepathicGrunt/3784f8a8b317bac11039474012de5fb4
+
 https://github.com/SpongePowered/Mixin/wiki
 https://github.com/SpongePowered/Mixin/wiki/Mixins-on-Minecraft-Forge
 https://jenkins.liteloader.com/job/Mixin/javadoc/

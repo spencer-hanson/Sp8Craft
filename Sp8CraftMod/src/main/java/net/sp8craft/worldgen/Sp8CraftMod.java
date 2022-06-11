@@ -42,6 +42,16 @@ public class Sp8CraftMod {
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    public static final DeferredRegister<Boolean> SP8CRAFT_BOOL_REGISTER = DeferredRegister.create(
+            new ResourceLocation("bool_register"), MOD_ID
+    );
+
+    public static final String KEY_USE_WORLDGEN = "use_worldgen";
+
+    public static final RegistryObject<Boolean> SP8CRAFT_USE_CUSTOM_WORLDGEN = SP8CRAFT_BOOL_REGISTER.register(
+            KEY_USE_WORLDGEN, () -> false
+    );
+
     private static final DeferredRegister<Codec<? extends ChunkGenerator>> CHUNK_GENERATORS = DeferredRegister.create(
             Registry.CHUNK_GENERATOR_REGISTRY, MOD_ID
     );
@@ -49,6 +59,8 @@ public class Sp8CraftMod {
     public static final RegistryObject<Codec<? extends ChunkGenerator>> SP8CRAFT_CHUNK_GEN = CHUNK_GENERATORS.register(
             MOD_ID, () -> Sp8CraftChunkGenerator.CODEC
     );
+
+
 
     public static final DeferredRegister<ForgeWorldPreset> WORLD_TYPES = DeferredRegister.create(
             ForgeRegistries.Keys.WORLD_TYPES, ForgeRegistries.Keys.WORLD_TYPES.location().getNamespace()
@@ -80,6 +92,9 @@ public class Sp8CraftMod {
         WORLD_TYPES.register(FMLJavaModLoadingContext.get().getModEventBus());
         CHUNK_GENERATORS.register(FMLJavaModLoadingContext.get().getModEventBus());
         BIOMES.register(FMLJavaModLoadingContext.get().getModEventBus());
+
+//        SP8CRAFT_BOOL_REGISTER.makeRegistry()
+        SP8CRAFT_BOOL_REGISTER.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
     private void setup(final FMLCommonSetupEvent event) {
