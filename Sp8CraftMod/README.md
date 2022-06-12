@@ -5,7 +5,7 @@ Sp8Craft
 - Test Release
 - Add content / work on mod
 - Forge/Fabric Compat?
-
+- Logging stuff
 ## Notes
 Forge Main Docs https://mcforge.readthedocs.io/en/latest/concepts/registries/
 

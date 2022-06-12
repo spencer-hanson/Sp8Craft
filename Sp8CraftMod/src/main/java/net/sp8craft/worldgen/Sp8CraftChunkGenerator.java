@@ -7,7 +7,6 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.NoiseColumn;
@@ -21,11 +20,9 @@ import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.blending.Blender;
-import net.minecraft.world.level.levelgen.flat.FlatLayerInfo;
-import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
-import net.minecraft.world.level.levelgen.structure.BuiltinStructureSets;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraftforge.common.world.ForgeWorldPreset;
+import net.sp8craft.config.Sp8CraftConfig;
 import net.sp8craft.worldgen.biomes.Sp8CraftBiomeManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,6 +36,8 @@ import java.util.concurrent.Executor;
 public class Sp8CraftChunkGenerator extends ChunkGenerator {
     private long seed;
     protected final Registry<StructureSet> structureSets;
+    private static boolean hasSetWorldTypeConfigFlag = false;
+
 
     public static final Codec<Sp8CraftChunkGenerator> CODEC = RecordCodecBuilder.create((instance) ->
             instance.group(
@@ -53,6 +52,11 @@ public class Sp8CraftChunkGenerator extends ChunkGenerator {
 
         this.seed = seed;
         this.structureSets = structureSets;
+
+        if (!Sp8CraftChunkGenerator.hasSetWorldTypeConfigFlag) {
+            Sp8CraftConfig.BOOL_CONFIGS.replace(Sp8CraftConfig.KEY_USE_WORLDGEN, true);
+            Sp8CraftChunkGenerator.hasSetWorldTypeConfigFlag = true;
+        }
     }
 
     public Sp8CraftChunkGenerator(Registry<StructureSet> pStructureSets, Optional<HolderSet<StructureSet>> pStructureOverrides, BiomeSource pBiomeSource) {
@@ -84,7 +88,6 @@ public class Sp8CraftChunkGenerator extends ChunkGenerator {
 //            flatlevelgeneratorsettings.getLayersInfo().add(new FlatLayerInfo(1, Blocks.GRASS_BLOCK));
 //            flatlevelgeneratorsettings.updateLayers();
 
-
             return new Sp8CraftChunkGenerator(
                     structureSet,
 //                    new FixedBiomeSource(settings.getBiomeFromSettings()),
@@ -105,7 +108,6 @@ public class Sp8CraftChunkGenerator extends ChunkGenerator {
             return ForgeWorldPreset.IBasicChunkGeneratorFactory.super.createSettings(dynamicRegistries, seed, generateStructures, bonusChest, generatorSettings);
         }
     }
-
 
     @Override
     public @NotNull CompletableFuture<ChunkAccess> fillFromNoise(
@@ -143,11 +145,11 @@ public class Sp8CraftChunkGenerator extends ChunkGenerator {
             for (int z = 0; z < 16; z++) {
                 double blockX = x + (chunkX * 16);
                 double blockZ = z + (chunkZ * 16);
-                double blockY = (amplitude * Math.round((Math.sin(Math.sqrt(blockX*blockX + blockZ*blockZ) * scale) / twoPi * roundFactor)) / roundFactor);
+                double blockY = (amplitude * Math.round((Math.sin(Math.sqrt(blockX * blockX + blockZ * blockZ) * scale) / twoPi * roundFactor)) / roundFactor);
                 blockY += amplitude; // Offset from 0
 
 
-                int intY = (int)Math.floor(blockY);
+                int intY = (int) Math.floor(blockY);
 
                 chunkAccess.setBlockState(
                         mutableBlockPos.set(

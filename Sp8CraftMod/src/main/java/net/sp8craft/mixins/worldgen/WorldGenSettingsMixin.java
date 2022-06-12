@@ -10,7 +10,6 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
-import net.sp8craft.worldgen.ISp8CraftLevelTypeMixin;
 import net.sp8craft.worldgen.Sp8CraftChunkGenerator;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
@@ -22,25 +21,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 
 import static net.minecraft.world.level.levelgen.WorldGenSettings.parseSeed;
-import static net.sp8craft.worldgen.Sp8CraftMod.MOD_ID;
+import static net.sp8craft.worldgen.Sp8CraftMod.SP8_MOD_ID;
 
 @Mixin(WorldGenSettings.class)
-public abstract class WorldGenSettingsMixin implements ISp8CraftLevelTypeMixin {
+public abstract class WorldGenSettingsMixin {
     // Directly reference a slf4j logger
     @Final
     @Shadow
-    private static Logger LOGGER = LogUtils.getLogger();
-
-    private String levelType;
+    private final static Logger LOGGER = LogUtils.getLogger();
 
     @Inject(at = @At("HEAD"), method = "create", cancellable = true)
     private static void sp8craft_worldgen_create(RegistryAccess pRegistryAccess, DedicatedServerProperties.WorldGenProperties pProperties, CallbackInfoReturnable<WorldGenSettings> callback) {
         String levelType = pProperties.levelType();
-        if (levelType.equals(MOD_ID)) {
+        if (levelType.equals(SP8_MOD_ID)) {
             long seed = parseSeed(pProperties.levelSeed()).orElse((new Random()).nextLong());
             ChunkGenerator sp8ChunkGen = new Sp8CraftChunkGenerator.Sp8ChunkFactory().createChunkGenerator(pRegistryAccess, seed);
 
@@ -68,27 +64,7 @@ public abstract class WorldGenSettingsMixin implements ISp8CraftLevelTypeMixin {
                     writableregistry
             );
 
-            LOGGER.info("Setting leveltype as " + levelType);
-            ISp8CraftLevelTypeMixin m = (ISp8CraftLevelTypeMixin) worldGenSettings;
-            m.setLevelType(levelType);
-
             callback.setReturnValue(worldGenSettings);
         }
-    }
-
-    @Inject(at=@At("RETURN"), method = "<init>*")
-    private void sp8craftworldgen_registerLevelType(CallbackInfo ci) {
-        this.levelType = "default";
-    }
-
-
-    @Override
-    public String getLevelType() {
-        return this.levelType;
-    }
-
-    @Override
-    public void setLevelType(String levl) {
-        this.levelType = levl;
     }
 }

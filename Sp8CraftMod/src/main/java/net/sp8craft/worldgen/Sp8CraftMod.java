@@ -3,15 +3,11 @@ package net.sp8craft.worldgen;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.chunk.ChunkStatus;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.world.ForgeWorldPreset;
 import net.minecraftforge.event.RegistryEvent;
@@ -25,10 +21,7 @@ import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryBuilder;
 import net.minecraftforge.registries.RegistryObject;
-import net.sp8craft.worldgen.Sp8CraftChunkGenerator;
-import net.sp8craft.worldgen.Sp8CraftWorldType;
 import net.sp8craft.worldgen.biomes.Sp8CraftBiomeManager;
 import org.slf4j.Logger;
 
@@ -37,41 +30,29 @@ import java.util.stream.Collectors;
 
 @Mod("sp8craft")
 public class Sp8CraftMod {
-    public static final String MOD_ID = "sp8craft";
+    public static final String SP8_MOD_ID = "sp8craft";
 
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public static final DeferredRegister<Boolean> SP8CRAFT_BOOL_REGISTER = DeferredRegister.create(
-            new ResourceLocation("bool_register"), MOD_ID
-    );
-
-    public static final String KEY_USE_WORLDGEN = "use_worldgen";
-
-    public static final RegistryObject<Boolean> SP8CRAFT_USE_CUSTOM_WORLDGEN = SP8CRAFT_BOOL_REGISTER.register(
-            KEY_USE_WORLDGEN, () -> false
-    );
-
     private static final DeferredRegister<Codec<? extends ChunkGenerator>> CHUNK_GENERATORS = DeferredRegister.create(
-            Registry.CHUNK_GENERATOR_REGISTRY, MOD_ID
+            Registry.CHUNK_GENERATOR_REGISTRY, SP8_MOD_ID
     );
 
     public static final RegistryObject<Codec<? extends ChunkGenerator>> SP8CRAFT_CHUNK_GEN = CHUNK_GENERATORS.register(
-            MOD_ID, () -> Sp8CraftChunkGenerator.CODEC
+            SP8_MOD_ID, () -> Sp8CraftChunkGenerator.CODEC
     );
-
-
 
     public static final DeferredRegister<ForgeWorldPreset> WORLD_TYPES = DeferredRegister.create(
             ForgeRegistries.Keys.WORLD_TYPES, ForgeRegistries.Keys.WORLD_TYPES.location().getNamespace()
     );
 
     public static final RegistryObject<ForgeWorldPreset> SP8_WORLD = WORLD_TYPES.register(
-            MOD_ID, () -> new Sp8CraftWorldType(new Sp8CraftChunkGenerator.Sp8ChunkFactory())
+            SP8_MOD_ID, () -> new Sp8CraftWorldType(new Sp8CraftChunkGenerator.Sp8ChunkFactory())
     );
 
     public static final DeferredRegister<Biome> BIOMES = DeferredRegister.create(
-            Registry.BIOME_REGISTRY, MOD_ID
+            Registry.BIOME_REGISTRY, SP8_MOD_ID
     );
 
 
@@ -92,9 +73,6 @@ public class Sp8CraftMod {
         WORLD_TYPES.register(FMLJavaModLoadingContext.get().getModEventBus());
         CHUNK_GENERATORS.register(FMLJavaModLoadingContext.get().getModEventBus());
         BIOMES.register(FMLJavaModLoadingContext.get().getModEventBus());
-
-//        SP8CRAFT_BOOL_REGISTER.makeRegistry()
-        SP8CRAFT_BOOL_REGISTER.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
     private void setup(final FMLCommonSetupEvent event) {
@@ -105,7 +83,7 @@ public class Sp8CraftMod {
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
         // Some example code to dispatch IMC to another mod
-        InterModComms.sendTo(MOD_ID, "helloworld", () -> {
+        InterModComms.sendTo(SP8_MOD_ID, "helloworld", () -> {
             LOGGER.info("Hello world from the MDK");
             return "Hello world";
         });
