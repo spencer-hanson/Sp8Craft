@@ -26,6 +26,7 @@ import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.border.BorderChangeListener;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.PatrolSpawner;
@@ -34,6 +35,7 @@ import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.storage.*;
 import net.sp8craft.config.Sp8CraftConfig;
 import net.sp8craft.server.level.Sp8CraftServerLevel;
+import net.sp8craft.world.level.chunk.Sp8CraftChunkStatus;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -100,10 +102,38 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
         throw new AssertionError();
     }
 
+
+    public List<ChunkStatus> getDefaultStatusByRange() {
+        return ImmutableList.of(ChunkStatus.FULL,
+                ChunkStatus.FEATURES,
+                ChunkStatus.LIQUID_CARVERS,
+                ChunkStatus.BIOMES,
+                ChunkStatus.STRUCTURE_STARTS,
+                ChunkStatus.STRUCTURE_STARTS,
+                ChunkStatus.STRUCTURE_STARTS,
+                ChunkStatus.STRUCTURE_STARTS,
+                ChunkStatus.STRUCTURE_STARTS,
+                ChunkStatus.STRUCTURE_STARTS,
+                ChunkStatus.STRUCTURE_STARTS,
+                ChunkStatus.STRUCTURE_STARTS
+        );
+    }
+
+    public List<ChunkStatus> getSp8CraftStatusByRange() {
+        return ImmutableList.of(Sp8CraftChunkStatus.SP8CRAFT_FULL);
+    }
+
     @Inject(at = @At("HEAD"), method = "createLevels", cancellable = true)
     private void sp8craft_server_createLevels(ChunkProgressListener p_129816_, CallbackInfo ci) {
+        ChunkStatus.STATUS_BY_RANGE = this.getDefaultStatusByRange();
+
+
         if (Sp8CraftConfig.BOOL_CONFIGS.get(Sp8CraftConfig.KEY_USE_WORLDGEN)) {
-            LOGGER.info("createLevels");
+            LOGGER.info("createLevels"); // TODO Logging
+
+//            ChunkStatus.STATUS_BY_RANGE = this.getSp8CraftStatusByRange();
+            ChunkStatus.STATUS_BY_RANGE = this.getDefaultStatusByRange();
+
             ServerLevelData serverleveldata = this.worldData.overworldData();
             WorldGenSettings worldgensettings = this.worldData.worldGenSettings();
             boolean flag = worldgensettings.isDebug();
@@ -132,7 +162,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
 
             //////////////
             ServerLevel serverlevel = new Sp8CraftServerLevel(
-                    (MinecraftServer)(Object) this,
+                    (MinecraftServer) (Object) this,
                     this.executor, this.storageSource, serverleveldata, Level.OVERWORLD, holder, p_129816_, chunkgenerator, flag, j, list, true);
             //////////////
             this.levels.put(Level.OVERWORLD, serverlevel);
@@ -167,7 +197,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
                 this.getCustomBossEvents().load(this.worldData.getCustomBossEvents());
             }
 
-            for(Map.Entry<ResourceKey<LevelStem>, LevelStem> entry : registry.entrySet()) {
+            for (Map.Entry<ResourceKey<LevelStem>, LevelStem> entry : registry.entrySet()) {
                 ResourceKey<LevelStem> resourcekey = entry.getKey();
                 if (resourcekey != LevelStem.OVERWORLD) {
                     ResourceKey<Level> resourcekey1 = ResourceKey.create(Registry.DIMENSION_REGISTRY, resourcekey.location());
@@ -176,7 +206,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
                     DerivedLevelData derivedleveldata = new DerivedLevelData(this.worldData, serverleveldata);
                     //////////////
                     ServerLevel serverlevel1 = new Sp8CraftServerLevel(
-                            (MinecraftServer)(Object)this,
+                            (MinecraftServer) (Object) this,
                             this.executor, this.storageSource, derivedleveldata, resourcekey1, holder1, p_129816_, chunkgenerator1, flag, j, ImmutableList.of(), false);
                     //////////////
                     worldborder.addListener(new BorderChangeListener.DelegateBorderChangeListener(serverlevel1.getWorldBorder()));

@@ -8,6 +8,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.world.ForgeWorldPreset;
 import net.minecraftforge.event.RegistryEvent;
@@ -22,6 +23,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import net.sp8craft.world.level.chunk.Sp8CraftChunkStatus;
 import net.sp8craft.worldgen.biomes.Sp8CraftBiomeManager;
 import org.slf4j.Logger;
 
@@ -35,30 +37,29 @@ public class Sp8CraftMod {
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    private static final DeferredRegister<Codec<? extends ChunkGenerator>> CHUNK_GENERATORS = DeferredRegister.create(
-            Registry.CHUNK_GENERATOR_REGISTRY, SP8_MOD_ID
-    );
+    // Chunk Generators
+    private static final DeferredRegister<Codec<? extends ChunkGenerator>> CHUNK_GENERATORS = DeferredRegister.create(Registry.CHUNK_GENERATOR_REGISTRY, SP8_MOD_ID);
+    public static final RegistryObject<Codec<? extends ChunkGenerator>> SP8CRAFT_CHUNK_GEN = CHUNK_GENERATORS.register(SP8_MOD_ID, () -> Sp8CraftChunkGenerator.CODEC);
 
-    public static final RegistryObject<Codec<? extends ChunkGenerator>> SP8CRAFT_CHUNK_GEN = CHUNK_GENERATORS.register(
-            SP8_MOD_ID, () -> Sp8CraftChunkGenerator.CODEC
-    );
+    // World Types
+    public static final DeferredRegister<ForgeWorldPreset> WORLD_TYPES = DeferredRegister.create(ForgeRegistries.Keys.WORLD_TYPES, ForgeRegistries.Keys.WORLD_TYPES.location().getNamespace());
+    public static final RegistryObject<ForgeWorldPreset> SP8_WORLD = WORLD_TYPES.register(SP8_MOD_ID, () -> new Sp8CraftWorldType(new Sp8CraftChunkGenerator.Sp8ChunkFactory()));
 
-    public static final DeferredRegister<ForgeWorldPreset> WORLD_TYPES = DeferredRegister.create(
-            ForgeRegistries.Keys.WORLD_TYPES, ForgeRegistries.Keys.WORLD_TYPES.location().getNamespace()
-    );
+    // Biomes
+    public static final DeferredRegister<Biome> BIOMES = DeferredRegister.create(Registry.BIOME_REGISTRY, SP8_MOD_ID);
+    public static final Sp8CraftBiomeManager SP8_BIOME_MANAGER = new Sp8CraftBiomeManager();
 
-    public static final RegistryObject<ForgeWorldPreset> SP8_WORLD = WORLD_TYPES.register(
-            SP8_MOD_ID, () -> new Sp8CraftWorldType(new Sp8CraftChunkGenerator.Sp8ChunkFactory())
+    // ChunkStatus
+    public static final DeferredRegister<ChunkStatus> CHUNK_STATUSES = DeferredRegister.create(Registry.CHUNK_STATUS_REGISTRY, SP8_MOD_ID);
+    public static final RegistryObject<ChunkStatus> FULL_CHUNK_STATUS = CHUNK_STATUSES.register("minecraft",
+            () -> {
+//                return Sp8CraftChunkStatus.SP8CRAFT_FULL;
+                LOGGER.info("Creating ChunkStatus here");
+                return Sp8CraftChunkStatus.DEFAULT_FULL;
+            }
     );
-
-    public static final DeferredRegister<Biome> BIOMES = DeferredRegister.create(
-            Registry.BIOME_REGISTRY, SP8_MOD_ID
-    );
-
 
     public Sp8CraftMod() {
-        Sp8CraftBiomeManager.init();
-
         // Register the setup method for modloading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         // Register the enqueueIMC method for modloading
@@ -69,10 +70,11 @@ public class Sp8CraftMod {
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
 
-
         WORLD_TYPES.register(FMLJavaModLoadingContext.get().getModEventBus());
         CHUNK_GENERATORS.register(FMLJavaModLoadingContext.get().getModEventBus());
         BIOMES.register(FMLJavaModLoadingContext.get().getModEventBus());
+        CHUNK_STATUSES.register(FMLJavaModLoadingContext.get().getModEventBus());
+
     }
 
     private void setup(final FMLCommonSetupEvent event) {
@@ -112,5 +114,12 @@ public class Sp8CraftMod {
             // Register a new block here
             LOGGER.info("HELLO from Register Block");
         }
+
+//        @SubscribeEvent
+//        public static void onChunkRegistry(final RegistryEvent.Register<ChunkStatus> event) {
+//            event.getRegistry().registerAll(
+//                    Sp8CraftChunkStatus.SP8CRAFT_FULL
+//            );
+//        }
     }
 }

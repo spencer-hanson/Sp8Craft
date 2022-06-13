@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ProgressListener;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.entity.PersistentEntitySectionManager;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
@@ -28,6 +30,8 @@ import net.minecraft.world.level.storage.ServerLevelData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
+
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.Predicate;
@@ -42,11 +46,26 @@ public class Sp8CraftServerLevel extends ServerLevel {
     public Sp8CraftServerLevel(MinecraftServer minecraftServer, Executor executor, LevelStorageSource.LevelStorageAccess levelStorageAccess, ServerLevelData serverLevelData,
                                ResourceKey<Level> levelResourceKey, Holder<DimensionType> dimensionTypeHolder, ChunkProgressListener chunkProgressListener, ChunkGenerator chunkGenerator,
                                boolean isDebug, long obfuscatedWorldSeed, List<CustomSpawner> customSpawnerList, boolean doTickTime) {
+
         super(minecraftServer, executor, levelStorageAccess, serverLevelData, levelResourceKey, dimensionTypeHolder, chunkProgressListener, chunkGenerator, isDebug, obfuscatedWorldSeed, customSpawnerList, doTickTime);
 
         LOGGER.info("==============================================================");
         LOGGER.info("Creating custom Sp8Craft server level '" + levelResourceKey + "'");
         LOGGER.info("==============================================================");
+
+        this.chunkSource = new Sp8CraftServerChunkCache(
+                this,
+                levelStorageAccess,
+                minecraftServer.getFixerUpper(),
+                minecraftServer.getStructureManager(),
+                executor,
+                chunkGenerator,
+                minecraftServer.getPlayerList().getViewDistance(),
+                minecraftServer.getPlayerList().getSimulationDistance(),
+                minecraftServer.forceSynchronousWrites(),
+                chunkProgressListener,
+                this.entityManager::updateChunkStatus, () -> minecraftServer.overworld().getDataStorage()
+        );
 
     }
 
@@ -137,6 +156,7 @@ public class Sp8CraftServerLevel extends ServerLevel {
     @Nullable
     @Override
     public ChunkAccess getChunk(int pX, int pZ, @NotNull ChunkStatus pRequiredStatus, boolean pNonnull) {
+        // TODO Require status to be "minecraft:full" on all chunks here? (will need to test cascading worldgen)
         return super.getChunk(pX, pZ, pRequiredStatus, pNonnull);
     }
 
@@ -290,6 +310,7 @@ public class Sp8CraftServerLevel extends ServerLevel {
     public @NotNull Holder<Biome> getBiome(@NotNull BlockPos pPos) {
         return super.getBiome(pPos);
     }
+
     /**
      * Check if precipitation is currently happening at a position
      */

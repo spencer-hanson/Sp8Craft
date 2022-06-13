@@ -3,8 +3,8 @@
   "package": "net.sp8craft.mixins",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "worldgen.WorldGenSettingsMixin",
-    "server.MinecraftServerMixin"
+    "server.MinecraftServerMixin",
+    "worldgen.WorldGenSettingsMixin"
   ],
   "client": [
   ],
