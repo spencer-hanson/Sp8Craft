@@ -3,8 +3,10 @@ package net.sp8craft.mixins.server;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
+import net.minecraft.Util;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -102,37 +104,19 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
         throw new AssertionError();
     }
 
-
-    public List<ChunkStatus> getDefaultStatusByRange() {
-        return ImmutableList.of(ChunkStatus.FULL,
-                ChunkStatus.FEATURES,
-                ChunkStatus.LIQUID_CARVERS,
-                ChunkStatus.BIOMES,
-                ChunkStatus.STRUCTURE_STARTS,
-                ChunkStatus.STRUCTURE_STARTS,
-                ChunkStatus.STRUCTURE_STARTS,
-                ChunkStatus.STRUCTURE_STARTS,
-                ChunkStatus.STRUCTURE_STARTS,
-                ChunkStatus.STRUCTURE_STARTS,
-                ChunkStatus.STRUCTURE_STARTS,
-                ChunkStatus.STRUCTURE_STARTS
-        );
-    }
-
-    public List<ChunkStatus> getSp8CraftStatusByRange() {
-        return ImmutableList.of(Sp8CraftChunkStatus.SP8CRAFT_FULL);
-    }
-
     @Inject(at = @At("HEAD"), method = "createLevels", cancellable = true)
     private void sp8craft_server_createLevels(ChunkProgressListener p_129816_, CallbackInfo ci) {
-        ChunkStatus.STATUS_BY_RANGE = this.getDefaultStatusByRange();
-
-
         if (Sp8CraftConfig.BOOL_CONFIGS.get(Sp8CraftConfig.KEY_USE_WORLDGEN)) {
             LOGGER.info("createLevels"); // TODO Logging
-
-//            ChunkStatus.STATUS_BY_RANGE = this.getSp8CraftStatusByRange();
-            ChunkStatus.STATUS_BY_RANGE = this.getDefaultStatusByRange();
+            ChunkStatus.FULL = Sp8CraftChunkStatus.SP8CRAFT_FULL;
+            ChunkStatus.STATUS_BY_RANGE = Sp8CraftChunkStatus.SP8_CHUNKSTATUS_LIST;
+            ChunkStatus.RANGE_BY_STATUS = Util.make(new IntArrayList(ChunkStatus.getStatusList().size()), (p_196782_) -> {
+                int i = 0;
+                for(int j = ChunkStatus.getStatusList().size() - 1; j >= 0; --j) {
+                    while(i + 1 < ChunkStatus.STATUS_BY_RANGE.size() && j <= ChunkStatus.STATUS_BY_RANGE.get(i + 1).getIndex()) { ++i; }
+                    p_196782_.add(0, i);
+                }
+            });
 
             ServerLevelData serverleveldata = this.worldData.overworldData();
             WorldGenSettings worldgensettings = this.worldData.worldGenSettings();

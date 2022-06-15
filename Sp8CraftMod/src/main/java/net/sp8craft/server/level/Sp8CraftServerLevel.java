@@ -30,8 +30,6 @@ import net.minecraft.world.level.storage.ServerLevelData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
-
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.Predicate;
@@ -66,7 +64,6 @@ public class Sp8CraftServerLevel extends ServerLevel {
                 chunkProgressListener,
                 this.entityManager::updateChunkStatus, () -> minecraftServer.overworld().getDataStorage()
         );
-
     }
 
     /*
