@@ -1,50 +1,28 @@
-package net.sp8craft.worldgen.funcs;
+package net.sp8craft.math.funcs;
 
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.objecthunter.exp4j.Expression;
-import net.objecthunter.exp4j.ExpressionBuilder;
+import net.sp8craft.dependencies.net.objecthunter.exp4j.Expression;
+import net.sp8craft.dependencies.net.objecthunter.exp4j.ExpressionBuilder;
 
 public class Sp8WorldGenFunction {
     public BlockPos.MutableBlockPos mutableBlockPos;
 
     public Sp8WorldGenFunction() {
         this.mutableBlockPos = new BlockPos.MutableBlockPos();
-    }
 
-    private int getSign(int num) {
-        return num < 0 ? -1 : 1;
-    }
+        Expression ex = new ExpressionBuilder("3*x")
+                .variable("x")
+                .build();
+        ex.setVariable("x", 6);
+        ex.evaluate();
 
-    private int oppSign(int num) {
-        return num < 0 ? 1 : -1;
-    }
-
-    private static int getSpiralIndex(int x, int y) {
-        int index;
-        if (y * y >= x * x) {
-            index = (4 * y * y - y) - x;
-            if (y < x) {
-                index -= 2 * (y - x);
-            }
-        } else {
-            index = (4 * x * x - y) - x;
-            if (y < x) {
-                index += 2 * (y - x);
-            }
-        }
-        return index;
     }
 
     private BlockState getBlockState(int absX, int absY, int absZ, int relativeX, int relativeZ) {
-        Expression ex = new ExpressionBuilder("3*x").build();
-        ex.setVariable("x", relativeX);
-        System.out.println("Evaluatin " + relativeX + " -> " + ex.evaluate());
-
-
         int funcRange = 13;
 
         int interval = 22;
@@ -56,7 +34,7 @@ public class Sp8WorldGenFunction {
 
         absX = Math.abs(absX);
         absZ = Math.abs(absZ);
-        funcRange -= 1; // subtract 1 to account for 0
+
         boolean rangePosX = (absX % interval) <= funcRange;
         boolean rangePosZ = (absZ % interval) <= funcRange;
 
@@ -69,7 +47,7 @@ public class Sp8WorldGenFunction {
             absX = absX - funcRadius;
             absY = (absY - baseY) - funcRadius;
 
-            if (absY * absY + absX * absX + absZ * absZ <= funcRadius * funcRadius - 1) { // remove ball nipple
+            if (absY * absY + absX * absX + absZ * absZ <= funcRadius * funcRadius - 1) { // remove ball nipple by subtracting 1
                 return Blocks.EMERALD_BLOCK.defaultBlockState();
             }
         }

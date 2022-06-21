@@ -16,7 +16,7 @@ import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraftforge.common.world.ForgeWorldPreset;
 import net.sp8craft.worldgen.biomes.Sp8CraftBiomeManager;
-import net.sp8craft.worldgen.funcs.Sp8WorldGenFunction;
+import net.sp8craft.math.funcs.Sp8WorldGenFunction;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
