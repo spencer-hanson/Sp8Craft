@@ -1,45 +1,31 @@
 package net.sp8craft.math.expressions;
 
+import com.mojang.datafixers.util.Either;
+import net.minecraft.world.level.block.state.BlockState;
 import net.sp8craft.dependencies.net.objecthunter.exp4j.Expression;
 import net.sp8craft.dependencies.net.objecthunter.exp4j.ExpressionBuilder;
 import net.sp8craft.dependencies.net.objecthunter.exp4j.extras.FunctionsBoolean;
 import net.sp8craft.dependencies.net.objecthunter.exp4j.extras.FunctionsMisc;
 import net.sp8craft.dependencies.net.objecthunter.exp4j.extras.FunctionsSignal;
 import net.sp8craft.dependencies.net.objecthunter.exp4j.extras.OperatorsComparison;
-import net.sp8craft.dependencies.net.objecthunter.exp4j.tokenizer.UnknownFunctionOrVariableException;
+
+import java.util.Optional;
 
 public class Sp8Function {
-    public Expression expression;
-    public Sp8FunctionType type;
+    public Sp8Function() {
 
-    protected Sp8Function(Expression expression, Sp8FunctionType typ) {
-        this.type = typ;
-        this.expression = expression;
     }
 
-    public static class InvalidFunctionTypeException extends Exception {}
+    public Either<Optional<BlockState>, Sp8Function> applyFunc(int x, int y, int z) {
+        return Either.left(Optional.empty());
+    }
+
     public enum Sp8FunctionType {
         CONDITIONAL, // Used for detecting whether to apply the data function
-        DATA // Applies func and gets block type?
-    }
-    public static String typeToString(Sp8FunctionType typ) {
-        return switch (typ) {
-            case DATA -> "data";
-            case CONDITIONAL -> "conditional";
-        };
-    }
-
-    public static Sp8FunctionType stringToType(String val) throws InvalidFunctionTypeException {
-        return switch(val) {
-            case "data" -> Sp8FunctionType.DATA;
-            case "conditional" -> Sp8FunctionType.CONDITIONAL;
-            default -> throw new InvalidFunctionTypeException();
-        };
+        FEATURE // Returns feature
     }
 
     public static Expression buildExpression(String data) throws IllegalArgumentException {
-
-
         return new ExpressionBuilder(data)
                 .functions(FunctionsBoolean.getFunctions())
                 .functions(FunctionsMisc.getFunctions())

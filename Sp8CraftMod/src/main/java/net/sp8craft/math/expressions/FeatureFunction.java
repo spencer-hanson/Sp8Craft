@@ -6,9 +6,9 @@ import net.sp8craft.dependencies.net.objecthunter.exp4j.Expression;
 
 import java.util.Optional;
 
-public class ConditionFunction extends Sp8Function {
+public class FeatureFunction extends Sp8Function {
 
-    public ConditionFunction(String conditionExpression, Sp8Function func) {
+    public FeatureFunction() {
 
     }
 
@@ -17,12 +17,8 @@ public class ConditionFunction extends Sp8Function {
         return Either.left(Optional.empty());
     }
 
-
-//    public static ConditionFunction build(String data) {
-//        return new ConditionFunction(Sp8Function.buildExpression(data));
-//    }
 //
-//    public boolean run() {
-//
+//    public static FeatureFunction build(String data) {
+//        return new FeatureFunction(Sp8Function.buildExpression(data));
 //    }
 }

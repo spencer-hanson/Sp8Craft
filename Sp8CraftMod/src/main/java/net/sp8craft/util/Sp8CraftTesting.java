@@ -44,7 +44,6 @@ public class Sp8CraftTesting {
         ));
 
         FunctionEvaluator functionEvaluator = new FunctionEvaluator(
-                initialValues,
                 new File("expressions.java"),
                 () -> System.out.println("Detected update from elsewhere")
         );
@@ -57,7 +56,7 @@ public class Sp8CraftTesting {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            System.out.println("Running file result -> \"" + functionEvaluator.runFile() + "\"");
+            System.out.println("Running file result -> \"" + functionEvaluator.runFile(initialValues) + "\"");
         }
     }
 
