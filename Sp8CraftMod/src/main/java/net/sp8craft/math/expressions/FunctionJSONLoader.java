@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.sp8craft.math.expressions.json.FunctionJSON;
 import net.sp8craft.math.expressions.json.FunctionJSONDeserializer;
+import net.sp8craft.math.funcs.Sp8Function;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,8 +31,6 @@ public class FunctionJSONLoader {
         } else {
             func = FunctionJSON.getEmpty();
         }
-
-
-
+        return Sp8Function.fromFunctionJSON(func);
     }
 }

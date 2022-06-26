@@ -43,21 +43,21 @@ public class Sp8CraftTesting {
                 "int relY = " + relY + ";"
         ));
 
-        FunctionEvaluator functionEvaluator = new FunctionEvaluator(
-                new File("expressions.java"),
-                () -> System.out.println("Detected update from elsewhere")
-        );
-
-        functionEvaluator.startFileWatch();
-
-        while (true) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            System.out.println("Running file result -> \"" + functionEvaluator.runFile(initialValues) + "\"");
-        }
+//        FunctionEvaluator functionEvaluator = new FunctionEvaluator(
+//                new File("expressions.java"),
+//                () -> System.out.println("Detected update from elsewhere")
+//        );
+//
+//        functionEvaluator.startFileWatch();
+//
+//        while (true) {
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            System.out.println("Running file result -> \"" + functionEvaluator.runFile(initialValues) + "\"");
+//        }
     }
 
     public static void main(String[] args) {

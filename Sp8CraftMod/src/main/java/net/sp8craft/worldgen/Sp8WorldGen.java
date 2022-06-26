@@ -1,32 +1,28 @@
-package net.sp8craft.math.funcs;
-
+package net.sp8craft.worldgen;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.sp8craft.math.expressions.FunctionEvaluator;
+import net.sp8craft.math.expressions.FunctionJSONLoader;
+import net.sp8craft.math.funcs.Sp8Function;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
 
 
-public class Sp8WorldGenFunction {
+public class Sp8WorldGen {
     public BlockPos.MutableBlockPos mutableBlockPos;
-    public FunctionEvaluator funcEval;
+//    public FunctionEvaluator funcEval;
+    public Sp8Function jsonFunction;
 
-    public Sp8WorldGenFunction() {
+    public Sp8WorldGen() {
         this.mutableBlockPos = new BlockPos.MutableBlockPos();
 //        this.funcEval = new FunctionEvaluator(
 //                new File("expressions.java"),
 //                () -> System.out.println("Detected update from elsewhere")
 //        );
+        this.jsonFunction = FunctionJSONLoader.funcFromJSON();
     }
 
     private BlockState getBlockState(int absX, int absY, int absZ, int relativeX, int relativeZ) {
@@ -75,9 +71,12 @@ public class Sp8WorldGenFunction {
                 int absZ = relativeZ + (chunkZ * 16);
 
                 for (int absY = baseY; absY < maxY; absY++) {
-                    int relX = absX % 16;
-                    int relZ = absZ % 16;
-                    int relY = absY - baseY;
+
+                    chunkAccess.setBlockState(
+                                this.mutableBlockPos.set(absX, absY, absZ),
+                                Objects.requireNonNullElse(block, Blocks.DEEPSLATE_GOLD_ORE).defaultBlockState(),
+                                false
+                        );
 
 //                    ArrayList<String> initialValues = new ArrayList<>(Arrays.asList(
 //                            "boolean done = false;",

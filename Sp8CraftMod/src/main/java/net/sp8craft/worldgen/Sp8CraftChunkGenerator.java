@@ -16,7 +16,6 @@ import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraftforge.common.world.ForgeWorldPreset;
 import net.sp8craft.worldgen.biomes.Sp8CraftBiomeManager;
-import net.sp8craft.math.funcs.Sp8WorldGenFunction;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -26,7 +25,7 @@ import java.util.concurrent.Executor;
 public class Sp8CraftChunkGenerator extends ChunkGenerator {
     private long seed;
     protected final Registry<StructureSet> structureSets;
-    private Sp8WorldGenFunction genFunc;
+    private Sp8WorldGen genFunc;
 
 
     public static final Codec<Sp8CraftChunkGenerator> CODEC = RecordCodecBuilder.create((instance) ->
@@ -41,7 +40,7 @@ public class Sp8CraftChunkGenerator extends ChunkGenerator {
         super(structureSets, Optional.empty(), biomeSource);
         this.seed = seed;
         this.structureSets = structureSets;
-        this.genFunc = new Sp8WorldGenFunction();
+        this.genFunc = new Sp8WorldGen();
     }
 
     @Override
