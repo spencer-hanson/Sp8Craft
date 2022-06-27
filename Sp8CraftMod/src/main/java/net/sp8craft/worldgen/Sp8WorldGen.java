@@ -1,6 +1,7 @@
 package net.sp8craft.worldgen;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -13,7 +14,7 @@ import java.util.Objects;
 
 public class Sp8WorldGen {
     public BlockPos.MutableBlockPos mutableBlockPos;
-//    public FunctionEvaluator funcEval;
+    //    public FunctionEvaluator funcEval;
     public Sp8Function jsonFunction;
 
     public Sp8WorldGen() {
@@ -23,6 +24,7 @@ public class Sp8WorldGen {
 //                () -> System.out.println("Detected update from elsewhere")
 //        );
         this.jsonFunction = FunctionJSONLoader.funcFromJSON();
+        int g = 54;
     }
 
     private BlockState getBlockState(int absX, int absY, int absZ, int relativeX, int relativeZ) {
@@ -71,12 +73,11 @@ public class Sp8WorldGen {
                 int absZ = relativeZ + (chunkZ * 16);
 
                 for (int absY = baseY; absY < maxY; absY++) {
-
                     chunkAccess.setBlockState(
-                                this.mutableBlockPos.set(absX, absY, absZ),
-                                Objects.requireNonNullElse(block, Blocks.DEEPSLATE_GOLD_ORE).defaultBlockState(),
-                                false
-                        );
+                            this.mutableBlockPos.set(absX, absY, absZ),
+                            Sp8Function.evaluateFunction(this.jsonFunction, absX, absY, absZ),
+                            false
+                    );
 
 //                    ArrayList<String> initialValues = new ArrayList<>(Arrays.asList(
 //                            "boolean done = false;",

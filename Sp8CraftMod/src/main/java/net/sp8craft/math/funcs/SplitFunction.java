@@ -6,7 +6,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayList;
 
 public class SplitFunction extends Sp8Function {
-    private ArrayList<Sp8Function> funcs;
+    private final ArrayList<Sp8Function> funcs;
 
     public SplitFunction(ArrayList<Sp8Function> conditionFunctions) {
         this.funcs = conditionFunctions;
@@ -14,6 +14,12 @@ public class SplitFunction extends Sp8Function {
 
     @Override
     public Either<BlockState, Sp8Function> applyFunc(int x, int y, int z) {
-        return null;
+        for (Sp8Function func : this.funcs) {
+            Either<BlockState, Sp8Function> result = func.applyFunc(x, y, z);
+            if (result.right().isPresent() && !result.right().get().isEmpty() || result.left().isPresent()) {
+                return result;
+            }
+        }
+        return Either.right(Sp8Function.EMPTY);
     }
 }

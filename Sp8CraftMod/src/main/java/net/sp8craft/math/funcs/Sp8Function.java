@@ -12,15 +12,18 @@ import net.sp8craft.dependencies.net.objecthunter.exp4j.extras.FunctionsSignal;
 import net.sp8craft.dependencies.net.objecthunter.exp4j.extras.OperatorsComparison;
 import net.sp8craft.math.expressions.FeatureExpression;
 import net.sp8craft.math.expressions.json.FunctionJSON;
+import net.sp8craft.math.expressions.json.VarsJSON;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 
 public class Sp8Function {
+    public static Sp8Function EMPTY = new Sp8Function();
     private static final Logger LOGGER = LogUtils.getLogger();
-    private Func func;
-    private boolean empty;
+    private final Func func;
+    private final boolean empty;
 
     public interface Func {
         public Either<BlockState, Sp8Function> applyFunc(int x, int y, int z);
@@ -37,6 +40,7 @@ public class Sp8Function {
     }
 
     public Either<BlockState, Sp8Function> applyFunc(int x, int y, int z) {
+        LOGGER.error("Default Sp8Function applyFunc() being called! Needs to overwrite, returning DEEPSLATE GOLD ORE");
         return Either.left(Blocks.DEEPSLATE_GOLD_ORE.defaultBlockState());
     }
 
@@ -45,17 +49,23 @@ public class Sp8Function {
         int relX = absX % 16;
         int relZ = absZ % 16;
 
-        int chunkX = (int)Math.floor(absX / 16f);
-        int chunkZ = (int)Math.floor(absZ / 16f);
+        int chunkX = (int) Math.floor(absX / 16f);
+        int chunkZ = (int) Math.floor(absZ / 16f);
+        try {
+            return expr.setVariable("rX", relX, false)
+                    .setVariable("rZ", relZ, false)
+                    .setVariable("chunkX", chunkX, false)
+                    .setVariable("chunkZ", chunkZ, false)
+                    .setVariable("aX", absX, false)
+                    .setVariable("aY", absY, false)
+                    .setVariable("aZ", absZ, false)
+                    .evaluate();
 
-        return expr.setVariable("relX", relX)
-                .setVariable("relZ", relZ)
-                .setVariable("chunkX", chunkX)
-                .setVariable("chunkZ", chunkZ)
-                .setVariable("absX", absX)
-                .setVariable("absY", absY)
-                .setVariable("absZ", absZ)
-                .evaluate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("Error evaluating expression " + expr.toString());
+            return 0.0;
+        }
     }
 
     public static Sp8Function fromFunctionJSON(FunctionJSON json) {
@@ -67,8 +77,8 @@ public class Sp8Function {
 
             if (expr != null) {
                 expr = json.vars().replaceWithVars(expr);
-                Expression compiledConditionalExpr = Sp8Function.buildExpression(expr);
-                Expression compiledFeatureExpr = Sp8Function.buildExpression(featureEntry.getValue().expression());
+                Expression compiledConditionalExpr = Sp8Function.buildExpression(expr, json.vars());
+                Expression compiledFeatureExpr = Sp8Function.buildExpression(featureEntry.getValue().expression(), json.vars());
 
                 funcList.add(new ConditionFunction(
                         (x, y, z) -> Sp8Function.evaluateExpression(x, y, z, compiledConditionalExpr) == 1.0,
@@ -86,13 +96,43 @@ public class Sp8Function {
         return new SplitFunction(funcList);
     }
 
+    public static BlockState evaluateFunction(Sp8Function func, int x, int y, int z) {
+        Either<BlockState, Sp8Function> result = func.applyFunc(x, y, z);
 
-    public static Expression buildExpression(String data) throws IllegalArgumentException {
-        return new ExpressionBuilder(data)
-                .functions(FunctionsBoolean.getFunctions())
-                .functions(FunctionsMisc.getFunctions())
-                .functions(FunctionsSignal.getFunctions())
-                .operators(OperatorsComparison.getOperators())
-                .build();
+        if (result.left().isPresent()) {
+            return result.left().get();
+        }
+        Sp8Function nextFunc = result.right().get();
+        if (nextFunc.isEmpty()) {
+//            LOGGER.error("Function '" + nextFunc + "' returned empty! Returning airblock");
+            return Blocks.AIR.defaultBlockState();
+        }
+        return Sp8Function.evaluateFunction(nextFunc, x, y, z);
+    }
+
+    public boolean isEmpty() {
+        return this.empty;
+    }
+
+    public static Expression buildExpression(String data, VarsJSON vars) {
+        try {
+            ExpressionBuilder exBuilder = new ExpressionBuilder(data)
+                    .functions(FunctionsBoolean.getFunctions())
+                    .functions(FunctionsMisc.getFunctions())
+                    .functions(FunctionsSignal.getFunctions())
+                    .operators(OperatorsComparison.getOperators())
+                    .variables("aY", "aX", "aZ", "rX", "rZ", "chunkX", "chunkZ");
+            HashSet<String> varNames = new HashSet<>();
+            for (Map.Entry<String, String> entry : vars.vars().entrySet()) {
+                varNames.add(entry.getKey());
+            }
+            exBuilder.variables(varNames);
+
+            return exBuilder.build();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            LOGGER.error("Error parsing expression data: \n\n" + data + "\n\n");
+            return new ExpressionBuilder("1.0").build();
+        }
     }
 }

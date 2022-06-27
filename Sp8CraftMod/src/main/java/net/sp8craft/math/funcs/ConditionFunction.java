@@ -4,8 +4,8 @@ import com.mojang.datafixers.util.Either;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class ConditionFunction extends Sp8Function {
-    private Condition condition;
-    private Sp8Function nextFunc;
+    private final Condition condition;
+    private final Sp8Function nextFunc;
 
     public interface Condition {
         public boolean isConditionMet(int x, int y, int z);
@@ -18,6 +18,10 @@ public class ConditionFunction extends Sp8Function {
 
     @Override
     public Either<BlockState, Sp8Function> applyFunc(int x, int y, int z) {
-        return null;
+        if (this.condition.isConditionMet(x, y, z)) {
+            return Either.right(nextFunc);
+        } else {
+            return Either.right(Sp8Function.EMPTY);
+        }
     }
 }

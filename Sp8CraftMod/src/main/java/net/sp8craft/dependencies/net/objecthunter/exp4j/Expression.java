@@ -146,6 +146,14 @@ public final class Expression implements Serializable {
         result = null;
         return this;
     }
+    ////////////////////////////// MODIFIED
+    public Expression setVariable(final String name, final double value, boolean checkVariableExists) {
+        if(!checkVariableName(name, checkVariableExists)) { return this; }
+        variables.get(name).setValue(value);
+        result = null;
+        return this;
+    }
+    ////////////////////////////// MODIFIED
 
     private boolean hasUserFunction(String name) {
         boolean contains = false;
@@ -166,6 +174,25 @@ public final class Expression implements Serializable {
             throw new IllegalArgumentException(l10n("Variable '%s' doesn't exist.", name));
         }
     }
+
+    ////////////////////////////// MODIFIED
+    private boolean checkVariableName(String name, boolean checkVariableExists) {
+        if (hasUserFunction(name) || Functions.getBuiltinFunction(name) != null) {
+            throw new IllegalArgumentException(l10n(
+                    "The variable name '%s' is invalid. Since "
+                            + "there exists a function with the same name", name
+            ));
+        }
+        if (!variables.containsKey(name)) {
+            if(checkVariableExists) {
+                throw new IllegalArgumentException(l10n("Variable '%s' doesn't exist.", name));
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+    ////////////////////////////// MODIFIED
 
     /**
      * Sets the value of a set of variables, the variables to set must exist at build time and can't
