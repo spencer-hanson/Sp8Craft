@@ -2,13 +2,13 @@ package net.sp8craft.math.funcs;
 
 import com.mojang.datafixers.util.Either;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.ArrayList;
+import java.util.List;
 
 public class SplitFunction extends Sp8Function {
-    private final ArrayList<Sp8Function> funcs;
+    private final List<Sp8Function> funcs;
 
-    public SplitFunction(ArrayList<Sp8Function> conditionFunctions) {
+    public SplitFunction(String name, List<Sp8Function> conditionFunctions) {
+        super(name);
         this.funcs = conditionFunctions;
     }
 

@@ -23,25 +23,31 @@ public class Sp8Function {
     public static Sp8Function EMPTY = new Sp8Function();
     private static final Logger LOGGER = LogUtils.getLogger();
     private final Func func;
-    private final boolean empty;
+    private boolean empty;
+    public String name;
+    public static boolean shownError = false;
 
     public interface Func {
         public Either<BlockState, Sp8Function> applyFunc(int x, int y, int z);
     }
 
-    public Sp8Function(Func func) {
+    public Sp8Function(Func func, String name) {
         this.func = func;
+        this.name = name;
         this.empty = false;
     }
 
-    public Sp8Function() {
-        this.func = this::applyFunc;
+    public Sp8Function(String name) {
+        this((x, y, z) -> Either.left(Blocks.DEEPSLATE_GOLD_ORE.defaultBlockState()), name);
+    }
+
+    private Sp8Function() {
+        this("empty");
         this.empty = true;
     }
 
     public Either<BlockState, Sp8Function> applyFunc(int x, int y, int z) {
-        LOGGER.error("Default Sp8Function applyFunc() being called! Needs to overwrite, returning DEEPSLATE GOLD ORE");
-        return Either.left(Blocks.DEEPSLATE_GOLD_ORE.defaultBlockState());
+        return this.func.applyFunc(x, y, z);
     }
 
 
@@ -62,8 +68,11 @@ public class Sp8Function {
                     .evaluate();
 
         } catch (Exception e) {
-            e.printStackTrace();
-            LOGGER.error("Error evaluating expression " + expr.toString());
+            if(!shownError) {
+                e.printStackTrace();
+                LOGGER.error("Error evaluating expression " + expr.toString());
+                shownError = true;
+            }
             return 0.0;
         }
     }
@@ -73,16 +82,18 @@ public class Sp8Function {
 
         for (Map.Entry<String, FeatureExpression> featureEntry : json.features().features().entrySet()) {
             String featureConditions = featureEntry.getKey(); // TODO Parse multiple here?
-            String expr = json.conditionals().expressions().get(featureConditions);
+            String conditionalExprStr = json.conditionals().expressions().get(featureConditions);
 
-            if (expr != null) {
-                expr = json.vars().replaceWithVars(expr);
-                Expression compiledConditionalExpr = Sp8Function.buildExpression(expr, json.vars());
-                Expression compiledFeatureExpr = Sp8Function.buildExpression(featureEntry.getValue().expression(), json.vars());
+            if (conditionalExprStr != null) {
+                conditionalExprStr = json.vars().replaceWithVars(conditionalExprStr);
+                String featureExprStr = json.vars().replaceWithVars(featureEntry.getValue().expression());
 
-                funcList.add(new ConditionFunction(
+                Expression compiledConditionalExpr = Sp8Function.buildExpression(conditionalExprStr, json.vars());
+                Expression compiledFeatureExpr = Sp8Function.buildExpression(featureExprStr, json.vars());
+
+                funcList.add(new ConditionFunction("condition-" + featureConditions,
                         (x, y, z) -> Sp8Function.evaluateExpression(x, y, z, compiledConditionalExpr) == 1.0,
-                        new FeatureFunction(
+                        new FeatureFunction("feature-" + featureEntry,
                                 (x, y, z) -> Sp8Function.evaluateExpression(x, y, z, compiledFeatureExpr) == 1.0,
                                 featureEntry.getValue().getResult()
                         )
@@ -93,7 +104,7 @@ public class Sp8Function {
                 funcList.add(new Sp8Function()); // default
             }
         }
-        return new SplitFunction(funcList);
+        return new SplitFunction("json-start-split", funcList);
     }
 
     public static BlockState evaluateFunction(Sp8Function func, int x, int y, int z) {

@@ -25,7 +25,7 @@ import java.util.concurrent.Executor;
 public class Sp8CraftChunkGenerator extends ChunkGenerator {
     private long seed;
     protected final Registry<StructureSet> structureSets;
-    private Sp8WorldGen genFunc;
+    public Sp8WorldGen genFunc;
 
 
     public static final Codec<Sp8CraftChunkGenerator> CODEC = RecordCodecBuilder.create((instance) ->
@@ -50,7 +50,7 @@ public class Sp8CraftChunkGenerator extends ChunkGenerator {
             @NotNull StructureFeatureManager structureFeatureManager,
             @NotNull ChunkAccess chunkAccess) {
 
-        this.genFunc.setBlockState(chunkAccess);
+        this.genFunc.setBlockState(chunkAccess, Optional.empty());
         return CompletableFuture.completedFuture(chunkAccess);
     }
 

@@ -11,7 +11,8 @@ public class ConditionFunction extends Sp8Function {
         public boolean isConditionMet(int x, int y, int z);
     }
 
-    public ConditionFunction(Condition condition, Sp8Function nextFunc) {
+    public ConditionFunction(String name, Condition condition, Sp8Function nextFunc) {
+        super(name);
         this.condition = condition;
         this.nextFunc = nextFunc;
     }

@@ -12,7 +12,8 @@ public class FeatureFunction extends Sp8Function {
         public boolean isWithinFeature(int x, int y, int z);
     }
 
-    public FeatureFunction(FeatureBoundFunc featureBoundFunc, BlockState result) {
+    public FeatureFunction(String name, FeatureBoundFunc featureBoundFunc, BlockState result) {
+        super(name);
         this.featureFunc = featureBoundFunc;
         this.result = result;
     }
