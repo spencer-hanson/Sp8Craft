@@ -13,6 +13,7 @@ import net.sp8craft.dependencies.net.objecthunter.exp4j.extras.OperatorsComparis
 import net.sp8craft.math.expressions.FeatureExpression;
 import net.sp8craft.math.expressions.json.FunctionJSON;
 import net.sp8craft.math.expressions.json.VarsJSON;
+import net.sp8craft.util.Sp8CraftUtil;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -65,6 +66,7 @@ public class Sp8Function {
                     .setVariable("aX", absX, false)
                     .setVariable("aY", absY, false)
                     .setVariable("aZ", absZ, false)
+                    .setVariable("spiralIndex", Sp8CraftUtil.Math.getSpiralIndex(chunkX, chunkZ), false)
                     .evaluate();
 
         } catch (Exception e) {
@@ -132,7 +134,7 @@ public class Sp8Function {
                     .functions(FunctionsMisc.getFunctions())
                     .functions(FunctionsSignal.getFunctions())
                     .operators(OperatorsComparison.getOperators())
-                    .variables("aY", "aX", "aZ", "rX", "rZ", "chunkX", "chunkZ");
+                    .variables("aY", "aX", "aZ", "rX", "rZ", "chunkX", "chunkZ", "spiralIndex");
             HashSet<String> varNames = new HashSet<>();
             for (Map.Entry<String, String> entry : vars.vars().entrySet()) {
                 varNames.add(entry.getKey());

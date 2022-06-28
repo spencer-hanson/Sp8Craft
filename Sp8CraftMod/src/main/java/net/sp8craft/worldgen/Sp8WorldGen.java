@@ -2,11 +2,11 @@ package net.sp8craft.worldgen;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.sp8craft.math.expressions.FunctionEvaluator;
+import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
+import net.minecraft.world.level.levelgen.synth.SimplexNoise;
 import net.sp8craft.math.expressions.FunctionJSONLoader;
 import net.sp8craft.math.funcs.ConditionFunction;
 import net.sp8craft.math.funcs.FeatureFunction;
@@ -14,24 +14,48 @@ import net.sp8craft.math.funcs.Sp8Function;
 import net.sp8craft.math.funcs.SplitFunction;
 
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Optional;
 
 
 public class Sp8WorldGen {
     public BlockPos.MutableBlockPos mutableBlockPos;
-    //    public FunctionEvaluator funcEval;
-    public Sp8Function jsonFunction;
+    private Sp8Function jsonFunction;
 
-    public Sp8WorldGen() {
+    private XoroshiroRandomSource randomSource;
+    private SimplexNoise simplexNoise;
+
+    public Sp8WorldGen(long seed) {
         this.mutableBlockPos = new BlockPos.MutableBlockPos();
+        this.randomSource = new XoroshiroRandomSource(seed);
+        this.simplexNoise = new SimplexNoise(this.randomSource);
+
 //        this.funcEval = new FunctionEvaluator(
 //                new File("expressions.java"),
 //                () -> System.out.println("Detected update from elsewhere")
 //        );
         //https://redmine.riddler.com.ar/projects/exp4j/wiki/Extra_Functions_and_Operators
-        this.jsonFunction = FunctionJSONLoader.funcFromJSON();
-//        this.jsonFunction = new SplitFunction("worldgen-start", Arrays.asList(
+        this.reloadJSON();
+// add alternate 'empty' need word for it
+        // multi-block returns?
+        // names for functions
+        // possibly skipping to decrease usage?
+
+    }
+
+    public void reloadJSON() {
+//        this.jsonFunction = FunctionJSONLoader.funcFromJSON();
+
+        this.jsonFunction = new SplitFunction("worldgen-start", Arrays.asList(
+                new FeatureFunction(
+                        "simplex",
+                        (x, y, z) -> {
+
+                            double val1 = 10 * this.simplexNoise.getValue(x/10f, z/10f);
+                            if(y<val1) { return true; }
+
+                            return false;
+                        },
+                        Blocks.STONE.defaultBlockState())
 //                new ConditionFunction(
 //                        "within_asteroid",
 //                        ((x, y, z) -> {
@@ -54,16 +78,7 @@ public class Sp8WorldGen {
 //                                }), Blocks.MYCELIUM.defaultBlockState()
 //                        )
 //                )
-//        ));
-// add alternate 'empty' need word for it
-        // multi-block returns?
-        // names for functions
-        // possibly skipping to decrease usage?
-
-    }
-
-    public void reloadJSON() {
-        this.jsonFunction = FunctionJSONLoader.funcFromJSON();
+        ));
     }
 
     private BlockState getBlockState(int absX, int absY, int absZ, int relativeX, int relativeZ) {

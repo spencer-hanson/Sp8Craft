@@ -40,7 +40,7 @@ public class Sp8CraftChunkGenerator extends ChunkGenerator {
         super(structureSets, Optional.empty(), biomeSource);
         this.seed = seed;
         this.structureSets = structureSets;
-        this.genFunc = new Sp8WorldGen();
+        this.genFunc = new Sp8WorldGen(this.seed);
     }
 
     @Override

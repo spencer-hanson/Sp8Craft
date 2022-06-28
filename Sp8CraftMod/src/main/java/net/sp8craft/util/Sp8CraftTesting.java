@@ -3,7 +3,6 @@ package net.sp8craft.util;
 import net.sp8craft.dependencies.net.objecthunter.exp4j.Expression;
 import net.sp8craft.dependencies.net.objecthunter.exp4j.ExpressionBuilder;
 import net.sp8craft.dependencies.net.objecthunter.exp4j.extras.*;
-import net.sp8craft.math.expressions.FunctionEvaluator;
 import net.sp8craft.math.expressions.FunctionJSONLoader;
 
 import java.io.File;
